@@ -1,14 +1,14 @@
 import os
 import sys
 
-from PyQt5 import uic
-from PyQt5.QtCore import Qt, QMargins
-from PyQt5.QtWidgets import QApplication, QLabel, QVBoxLayout, QPlainTextEdit
+from PySide6.QtUiTools import loadUiType
+from PySide6.QtCore import Qt, QMargins
+from PySide6.QtWidgets import QApplication, QLabel, QVBoxLayout, QPlainTextEdit
 
-import PyQtAds as QtAds
+import PySide6QtAds as QtAds
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'MainWindow.ui')
-MainWindowUI, MainWindowBase = uic.loadUiType(UI_FILE)
+MainWindowUI, MainWindowBase = loadUiType(UI_FILE)
 
 
 class MainWindow(MainWindowUI, MainWindowBase):
@@ -57,4 +57,4 @@ if __name__ == '__main__':
     
     w = MainWindow()
     w.show()
-    app.exec_()
+    app.exec()
