@@ -2,9 +2,9 @@ import sys
 import os
 import atexit
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel
-from PyQt5.QtCore import Qt
-import PyQtAds as QtAds
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel
+from PySide6.QtCore import Qt
+import PySide6QtAds as QtAds
 
 from perspectives import PerspectivesManager
 from dockindock import DockInDockWidget
@@ -69,4 +69,4 @@ if __name__ == '__main__':
     
     w = MainWindow()
     w.show()
-    app.exec_()
+    app.exec()

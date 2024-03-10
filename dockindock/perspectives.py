@@ -3,10 +3,10 @@ import tempfile
 import shutil
 import atexit
 
-from PyQt5.QtCore import pyqtSignal, QSettings, QObject
-import PyQtAds as QtAds
+from PySide6.QtCore import QSettings, QObject, Signal
+import PySide6QtAds as QtAds
 
-from dockindockmanager import DockInDockManager
+from dockindockmanager import DockInDockManager, MoveDockWidgetAction
 from dockindock import DockInDockWidget
 
 GROUP_PREFIX = "Group"
@@ -29,9 +29,9 @@ class PerspectiveInfo:
 
 
 class PerspectivesManager(QObject):
-    perspectivesListChanged = pyqtSignal()
-    openingPerspective = pyqtSignal()
-    openedPerspective = pyqtSignal()
+    perspectivesListChanged = Signal()
+    openingPerspective = Signal()
+    openedPerspective = Signal()
 
     def __init__(self, perspectives_folder):
         super().__init__()
@@ -65,7 +65,7 @@ class PerspectivesManager(QObject):
             
         self.perspectivesListChanged.emit()
                 
-    def openPerspective(name: str, widget: DockInDockWidget) -> None:
+    def openPerspective(self, name: str, widget: DockInDockWidget) -> None:
         assert widget.getTopLevelDockWidget() == widget
         
         if self.__perspectives_folder:
@@ -77,14 +77,14 @@ class PerspectivesManager(QObject):
                     for group in self.__perspectives[name].groups.keys():
                         found = False
                         for curgroup in cur_groups:
-                            if curgroup.getPerspectiveGroupName() == group:
+                            if curgroup.getPersistGroupName() == group:
                                 found = True
                                 break
                         if not found:
                             group = DockInDockManager.getGroupNameFromPersistGroupName(group)
                             
-                        # restore group in file but not in GUI yet
-                        widget.createGroup(group, None)
+                            # restore group in file but not in GUI yet
+                            widget.createGroup(group, None)
                         
                     cur_groups = widget.getManager().allManagers(False, True)
                     for curgroup in cur_groups:
@@ -92,20 +92,22 @@ class PerspectivesManager(QObject):
                             widget.destroyGroup(curgroup.parent())
                             
                 managers = widget.getManager().allManagers(True, True)
-                for group in self.__perspectives[name].groups().keys():
+                for group in self.__perspectives[name].groups.keys():
                     for mgr in managers:
                         if mgr.getPersistGroupName() == group:
+                            if not self.__perspectives[name].groups[group]:
+                                continue
                             for widget_name in self.__perspectives[name].groups[group]:
-                                widget = findWidget(widget_name, [mgr])
-                                if widget:
+                                cdwidget = findWidget(widget_name, [mgr])
+                                if cdwidget:
                                     pass # OK, widget is already in the good manager!
                                 else:
-                                    widget = findWidget(widget_name, managers)
+                                    cdwidget = findWidget(widget_name, managers)
                                     if widget:
                                         # move dock widget in the same group as it used to be when perspective was saved
                                         # this guarantee load/open perspectives will work smartly
-                                        MoveDockWidgetAction.move(widget, mgr)
-                                        
+                                        MoveDockWidgetAction.move(cdwidget, mgr)
+
                  # internally load perspectives from QSettings
                 widget.getManager().loadPerspectivesRec(self.__perspectives[name].settings)
                 # load perspective (update GUI)
@@ -113,7 +115,7 @@ class PerspectivesManager(QObject):
                 # remove internal perspectives
                 widget.getManager().removePerspectives(widget.getManager().perspectiveNames())
 
-                self.openedPerspective().emit()
+                self.openedPerspective.emit()
         else:
             assert False
             
@@ -165,7 +167,8 @@ class PerspectivesManager(QObject):
                     # load group info:
                     main_settings.beginGroup(GROUP_PREFIX)
                     for key in main_settings.allKeys():
-                        self.__perspectives[perspective].groups[key] = main_settings.value(key)
+                        if main_settings.value(key):
+                            self.__perspectives[perspective].groups[key] = main_settings.value(key)
                     main_settings.endGroup()
                 else:
                     assert False
@@ -185,7 +188,8 @@ class PerspectivesManager(QObject):
                 main_settings.setValue("Name", perspective)
                 main_settings.beginGroup(GROUP_PREFIX)
                 for group in self.__perspectives[perspective].groups.keys():
-                    main_settings.setValue(group, list(self.__perspectives[perspective].groups[group]))
+                    if self.__perspectives[perspective].groups[group]:
+                        main_settings.setValue(group, list(self.__perspectives[perspective].groups[group]))
                 main_settings.endGroup()
             main_settings.endArray()
             

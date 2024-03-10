@@ -1,7 +1,8 @@
-from PyQt5.QtWidgets import QAction, QMenu, QInputDialog, QLineEdit
-from PyQt5.QtCore import QSettings
+from PySide6.QtWidgets import QMenu, QInputDialog, QLineEdit, QMessageBox
+from PySide6.QtCore import QSettings
+from PySide6.QtGui import QAction
 
-import PyQtAds as QtAds
+import PySide6QtAds as QtAds
 
 CHILD_PREFIX = "Child-"
 
@@ -75,7 +76,7 @@ class DockInDockManager(QtAds.CDockManager):
             group = CHILD_PREFIX + self.getGroupName()
         return group
         
-    def getGroupNameFromPersistGroupName(self, persist_group_name) -> str:
+    def getGroupNameFromPersistGroupName(persist_group_name) -> str:
         if persist_group_name.startswith(CHILD_PREFIX):
             persist_group_name = persist_group_name[len(CHILD_PREFIX):]
         else:
@@ -101,7 +102,7 @@ class DockInDockManager(QtAds.CDockManager):
     def removePerspectivesRec(self, settings: QSettings) -> None:
         children = self.allManagers(True, True)
         
-        for mgr in children:
+        for child in children:
             child.removePerspectives(child.perspectiveNames())
             
     @staticmethod
@@ -206,7 +207,7 @@ class MoveDockWidgetAction(QAction):
     def _move(self) -> None:
         self.move(self.__widget, self.__move_to)
         
-    def move(self, widget: QtAds.CDockWidget, move_to: QtAds.CDockManager) -> None:
+    def move(widget: QtAds.CDockWidget, move_to: QtAds.CDockManager) -> None:
         if widget and move_to:
             widget.dockManager().removeDockWidget(widget)
             move_to.addDockWidget(QtAds.CenterDockWidgetArea, widget, move_to.getInsertDefaultPos())

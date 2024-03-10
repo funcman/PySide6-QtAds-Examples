@@ -1,11 +1,11 @@
 import sys
 
-from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QMessageBox,
+from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QMessageBox,
                              QInputDialog, QMenu, QLineEdit)
-from PyQt5.QtGui import QIcon
-import PyQtAds as QtAds
+from PySide6.QtGui import QIcon
+import PySide6QtAds as QtAds
 
-from dockindockmanager import DockInDockManager
+from dockindockmanager import DockInDockManager, MoveDockWidgetAction
 from perspectiveactions import LoadPerspectiveAction, RemovePerspectiveAction
 
 
@@ -84,14 +84,14 @@ class DockInDockWidget(QWidget):
         
     def destroyGroup(self, widget_to_remove: 'DockInDockWidget') -> None:
         top_level_widget = widget_to_remove.getTopLevelDockWidget()
-        
+
         if top_level_widget and top_level_widget != widget_to_remove:
             for dock_widget in widget_to_remove.getManager().getWidgetsInGUIOrder(): #don't use allDockWidgets to preserve sub-groups
                 MoveDockWidgetAction.move(dock_widget, top_level_widget.getManager())
             assert not widget_to_remove.getManager().allDockWidgets(True, True)
 
             # find widget's parent:
-            for dock_widget in top_level_widget.getManager().allDockWidgets(True, True):
+            for dockwidget in top_level_widget.getManager().allDockWidgets(True, True):
                 if dockwidget[1].widget() == widget_to_remove:
                     dockwidget[0].removeDockWidget(dockwidget[1])
                     del dockwidget[1]
@@ -154,7 +154,7 @@ class DockInDockWidget(QWidget):
             for name in perspectives_names:
                 remove.addAction(RemovePerspectiveAction(remove, name, self))
                 
-    def setNewPerspectiveDefaultName(default_name: str) -> None:
+    def setNewPerspectiveDefaultName(self, default_name: str) -> None:
         self.__new_perspective_default_name = default_name
         
     def createPerspective(self) -> None:
