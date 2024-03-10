@@ -1,9 +1,9 @@
 import sys
 
-import PyQtAds as QtAds
-from PyQt5.QtGui import QCloseEvent
-from PyQt5.QtCore import (qDebug, pyqtSlot, QObject, pyqtSignal)
-from PyQt5.QtWidgets import (QMainWindow, QAction, QTextEdit, QApplication,
+import PySide6QtAds as QtAds
+from PySide6.QtGui import QCloseEvent, QAction
+from PySide6.QtCore import (qDebug, QObject)
+from PySide6.QtWidgets import (QMainWindow, QTextEdit, QApplication,
                              QMenuBar)
 
 
@@ -70,4 +70,4 @@ if __name__ == '__main__':
     action.triggered.connect(on_action2_triggered)
     
     w.show()
-    app.exec_()
+    app.exec()
